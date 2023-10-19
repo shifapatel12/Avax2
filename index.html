@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        width: 300px;
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px; /* Add margin to separate the button from the input */
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <h1>Lottery dApp</h1>
+      <p>Here guess and win Lottery</p>
+      <label for="mood">Input Number:</label> <br />
+      <input type="text" id="mood" />
+      <button onclick="guessNum()">Guess Num</button>
+      <button onclick="getWin()">Check Win</button>
+    </div>
+
+    <script
+      src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"
+      type="application/javascript"
+    ></script>
+    <script>
+      const provider = new ethers.providers.Web3Provider(
+        window.ethereum,
+        "sepolia"
+      );
+
+      const LotteryContractAddress =
+        "0xa38e9508368a823249b7eF291156F93CDcB8E66E";
+      const LotteryContractABI = [
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_num",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_num",
+              type: "uint256",
+            },
+          ],
+          name: "changeNum",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "checkWin",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_num",
+              type: "uint256",
+            },
+          ],
+          name: "guessNum",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "num",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ];
+
+      let LotteryContract;
+      let signer;
+
+      provider.send("eth_requestAccounts", []).then(() => {
+        provider.listAccounts().then(function (accounts) {
+          signer = provider.getSigner(accounts[0]);
+          LotteryContract = new ethers.Contract(
+            LotteryContractAddress,
+            LotteryContractABI,
+            signer
+          );
+        });
+      });
+
+      async function getWin() {
+        const getMoodPromise = LotteryContract.checkWin();
+        const Result = await getMoodPromise;
+        if (Result) {
+          console.log("Congratulations You won the lottrey");
+        } else {
+          console.log("Better luck next time");
+        }
+      }
+
+      async function guessNum() {
+        const num = document.getElementById("mood").value;
+        const guessNum = LotteryContract.guessNum(num);
+        await guessNum;
+      }
+    </script>
+  </body>
+</html>
